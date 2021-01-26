@@ -2,6 +2,7 @@ from PIL import Image
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import os
+import re
 
 
 def load_image(filename, size=None):
@@ -60,15 +61,25 @@ def imshow(tensor, title=None, ax_plt=None):
             plt.title(title)
 
 
+def get_item_from_path(folder):
+    DIR = f"{os.getcwd()}{folder}"
+    items = [name for name in os.listdir(DIR) if
+             os.path.isfile(os.path.join(DIR, name))]
+    return items
+
+
 def get_number_of_styles(model_folder="/models"):
-    DIR = f"{os.getcwd()}{model_folder}"
-    n_styles = len([name for name in os.listdir(DIR) if
-                    os.path.isfile(os.path.join(DIR, name))])
-    return n_styles
+    return len(get_item_from_path(model_folder))
 
 
 def get_model_path(model_id, model_folder="/models"):
-    DIR = f"{os.getcwd()}{model_folder}"
-    models = [name for name in os.listdir(DIR) if
-              os.path.isfile(os.path.join(DIR, name))]
-    return f"{DIR}/{models[model_id-1]}"
+    models = get_item_from_path(model_folder)
+    path = f"{os.getcwd()}{model_folder}/{models[model_id - 1]}"
+    return path
+
+
+def get_examples(img_folder="/examples"):
+    items = get_item_from_path(img_folder)
+    names = [re.findall(r'\w+', item)[0] for item in items]
+    paths = [f"{os.getcwd()}{img_folder}/{item}" for item in get_item_from_path(img_folder)]
+    return zip(paths, names)
