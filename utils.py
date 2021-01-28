@@ -68,8 +68,10 @@ def get_item_from_path(folder):
     return items
 
 
-def get_number_of_styles(model_folder="/models"):
-    return len(get_item_from_path(model_folder))
+def get_list_of_styles(model_folder="/models"):
+    items = get_item_from_path(model_folder)
+    names = [re.findall(r'\w+', item)[0] for item in items]
+    return names
 
 
 def get_model_path(model_id, model_folder="/models"):

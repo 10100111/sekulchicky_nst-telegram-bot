@@ -2,6 +2,10 @@ import torch
 
 
 class TransformerNet(torch.nn.Module):
+    """Feedforward Transformation Network
+    reference: https://arxiv.org/abs/1603.08155
+    exact architecture: https://cs.stanford.edu/people/jcjohns/papers/fast-style/fast-style-supp.pdf
+    """
     def __init__(self):
         super(TransformerNet, self).__init__()
         # Initial convolution layers
