@@ -6,14 +6,24 @@ from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.utils.executor import start_webhook
 from utils import get_list_of_styles, get_examples
 from model import StyleModel
 
-dotenv_path = path.join(path.dirname(__file__), '.env')
-# Take environment variables from .env.
-load_dotenv(dotenv_path)
 
+if path.exists(path.dirname(__file__)):
+    # Take environment variables from .env.
+    dotenv_path = path.join(path.dirname(__file__), '.env')
+    load_dotenv(dotenv_path)
+
+
+# webhook settings
 API_TOKEN = environ.get("TELEGRAM_API_TOKEN")
+WEBHOOK_HOST = environ.get("WEBHOOK_HOST_ADDR")
+WEBHOOK_PATH = f'/webhook/{API_TOKEN}'
+WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+WEBAPP_HOST = environ.get("WEBAPP_HOST")
+WEBAPP_PORT = environ.get("WEBAPP_PORT")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -185,5 +195,32 @@ async def handle_go_processing(message, content_image):
     await BotStates.waiting_select_style.set()
 
 
+async def on_startup(dp):
+    await bot.set_webhook(WEBHOOK_URL)
+    # insert code here to run it after start
+
+
+async def on_shutdown(dp):
+    logging.warning('Shutting down..')
+
+    # insert code here to run it before shutdown
+
+    # Remove webhook (not acceptable in some cases)
+    await bot.delete_webhook()
+
+    # Close DB connection (if used)
+    await dp.storage.close()
+    await dp.storage.wait_closed()
+
+    logging.warning('Bye!')
+
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    start_webhook(
+        dispatcher=dp,
+        webhook_path=WEBHOOK_PATH,
+        on_startup=on_startup,
+        on_shutdown=on_shutdown,
+        skip_updates=True,
+        host=WEBAPP_HOST,
+        port=WEBAPP_PORT,
+    )
