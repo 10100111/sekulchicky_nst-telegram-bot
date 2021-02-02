@@ -12,19 +12,15 @@ from model import StyleModel
 
 
 if path.exists(path.dirname(__file__)):
-    # FOR LOCAL DEBUG
     # Take environment variables from .env.
+    # Use if LOCAL DEBUG
     dotenv_path = path.join(path.dirname(__file__), '.env')
     load_dotenv(dotenv_path)
-    webhook_settings = False
-else:
-    webhook_settings = True
-
 
 API_TOKEN = environ.get("TELEGRAM_API_TOKEN")
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
@@ -213,6 +209,9 @@ async def on_shutdown(dp):
     logging.warning('Bye!')
 
 if __name__ == '__main__':
+
+    webhook_settings = False if environ.get('LOCAL_DEBUG') else True
+
     if webhook_settings:
         WEBHOOK_HOST = environ.get("WEBHOOK_HOST_ADDR")
         WEBHOOK_PATH = f'/webhook/{API_TOKEN}'
