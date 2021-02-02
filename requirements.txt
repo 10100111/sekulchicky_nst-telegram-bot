@@ -1,7 +1,8 @@
-torch==1.7.1+cpu
-torchvision==0.2.2.post3+cpu
 pillow==8.1.0
 matplotlib==3.3.3
 numpy==1.19.5
 python-dotenv==0.15.0
 aiogram==2.11.2
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.5.0+cpu
+torchvision==0.6.0+cpu
