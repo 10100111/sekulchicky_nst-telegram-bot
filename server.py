@@ -27,7 +27,7 @@ if webhook_settings:
     WEBHOOK_PATH = f'/webhook/{API_TOKEN}'
     WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
     WEBAPP_HOST = environ.get("WEBAPP_HOST")
-    WEBAPP_PORT = environ.get("WEBAPP_PORT")
+    WEBAPP_PORT = environ.get("PORT")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
