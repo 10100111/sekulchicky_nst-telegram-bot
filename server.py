@@ -214,11 +214,12 @@ if __name__ == '__main__':
 
     if webhook_settings:
         WEBHOOK_HOST = environ.get("WEBHOOK_HOST_ADDR")
-        WEBHOOK_PATH = f'/webhook/{API_TOKEN}'
-        WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+        WEBHOOK_PATH = f'webhook/{API_TOKEN}/'
+        WEBHOOK_URL = f"{WEBHOOK_HOST}/{WEBHOOK_PATH}"
         WEBAPP_HOST = environ.get("WEBAPP_HOST")
         WEBAPP_PORT = environ.get("PORT")
-        logging.info(f'Start webhook..\tWEBAPP_HOST-{WEBAPP_HOST}; WEBAPP_PORT-{WEBAPP_PORT};')
+        logging.info(f'Start webhook..\tWEBAPP_HOST-{WEBAPP_HOST}; WEBAPP_PORT-{WEBAPP_PORT};\n'
+                     f'WEBAPP_URL-{WEBHOOK_URL};')
         start_webhook(
             dispatcher=dp,
             webhook_path=WEBHOOK_PATH,
