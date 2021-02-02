@@ -5,4 +5,4 @@ python-dotenv==0.15.0
 aiogram==2.11.2
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==1.7.1+cpu
-torchvision==0.6.0+cpu
+torchvision==0.8.2+cpu
