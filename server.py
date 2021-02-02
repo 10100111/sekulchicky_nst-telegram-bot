@@ -47,7 +47,7 @@ class BotStates(StatesGroup):
 
 # Styles
 n_styles, style_names, user_style = 0, list(), 0
-content_img = Image.fromarray(np.array([0, 0, 0]))
+content_img = Image.fromarray(np.array([0, 0, 0]).astype(np.uint8))
 
 
 def set_keyboard(condition=True):
