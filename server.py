@@ -12,18 +12,22 @@ from model import StyleModel
 
 
 if path.exists(path.dirname(__file__)):
+    # FOR LOCAL DEBUG
     # Take environment variables from .env.
     dotenv_path = path.join(path.dirname(__file__), '.env')
     load_dotenv(dotenv_path)
+    webhook_settings = False
+else:
+    webhook_settings = True
 
 
-# webhook settings
 API_TOKEN = environ.get("TELEGRAM_API_TOKEN")
-WEBHOOK_HOST = environ.get("WEBHOOK_HOST_ADDR")
-WEBHOOK_PATH = f'/webhook/{API_TOKEN}'
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
-WEBAPP_HOST = environ.get("WEBAPP_HOST")
-WEBAPP_PORT = environ.get("WEBAPP_PORT")
+if webhook_settings:
+    WEBHOOK_HOST = environ.get("WEBHOOK_HOST_ADDR")
+    WEBHOOK_PATH = f'/webhook/{API_TOKEN}'
+    WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+    WEBAPP_HOST = environ.get("WEBAPP_HOST")
+    WEBAPP_PORT = environ.get("WEBAPP_PORT")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -215,12 +219,15 @@ async def on_shutdown(dp):
     logging.warning('Bye!')
 
 if __name__ == '__main__':
-    start_webhook(
-        dispatcher=dp,
-        webhook_path=WEBHOOK_PATH,
-        on_startup=on_startup,
-        on_shutdown=on_shutdown,
-        skip_updates=True,
-        host=WEBAPP_HOST,
-        port=WEBAPP_PORT,
-    )
+    if webhook_settings:
+        start_webhook(
+            dispatcher=dp,
+            webhook_path=WEBHOOK_PATH,
+            on_startup=on_startup,
+            on_shutdown=on_shutdown,
+            skip_updates=True,
+            host=WEBAPP_HOST,
+            port=WEBAPP_PORT,
+        )
+    else:
+        executor.start_polling(dp, skip_updates=True)
