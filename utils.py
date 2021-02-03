@@ -5,10 +5,10 @@ import os
 import re
 
 
-def load_image(filename, size=None):
+def load_image(filename, size=1800):
     img = Image.open(filename).convert('RGB')
 
-    if max(img.size) > 2048:
+    if max(img.size) > size:
         transform = transforms.Compose([
             transforms.Resize(size),
             transforms.CenterCrop(size),

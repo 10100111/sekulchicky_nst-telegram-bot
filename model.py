@@ -28,8 +28,8 @@ class StyleModel:
             return self.postprocess(result[0])
 
     def preprocess(self, image):
-        size = 1800
-        if max(image.size) > 2048:
+        size = 1500
+        if max(image.size) > size:
             transform = transforms.Compose([
                 transforms.Resize(size),
                 transforms.CenterCrop(size),
@@ -47,7 +47,6 @@ class StyleModel:
         img = data.clone().clamp(0, 255).numpy()
         img = img.transpose(1, 2, 0).astype("uint8")
         img = Image.fromarray(img)
-        #img.save(f'{self.model_id}_out.jpg')
         bio = io.BytesIO()
         bio.name = f'{self.model_id}_output.jpeg'
         img.save(bio, 'JPEG')

@@ -66,11 +66,12 @@ async def stylize(content_image):
     model = StyleModel(user_style)
     model.load_model()
     output = model.run(content_image)
+    gc.collect()
     return output
 
 
-async def gc_run():
-    gc.collect()
+#async def gc_run():
+#   gc.collect()
 
 
 @dp.message_handler(state='*', commands=['start', 'help'])
@@ -192,7 +193,6 @@ async def handle_go_processing(message):
     await message.answer("Готово! \U0001F64C\n\nЕсли хочешь попробовать еще, жми\U0001F447\U0001F447",
                          reply_markup=set_keyboard(False))
     await BotStates.waiting_select_style.set()
-    await gc_run()
 
 
 async def on_startup(dp):
