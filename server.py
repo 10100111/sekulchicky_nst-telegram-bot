@@ -195,18 +195,14 @@ async def on_startup(dp):
 
 
 async def on_shutdown(dp):
-    logging.warning('Shutting down..')
-
-    # insert code here to run it before shutdown
-
-    # Remove webhook (not acceptable in some cases)
-    await bot.delete_webhook()
-
+    logging.warning("Shutting down..")
+    logging.info(f"Start webhook..\tWEBAPP_HOST-{WEBAPP_HOST}; WEBAPP_PORT-{WEBAPP_PORT};\n"
+                 f"WEBAPP_URL-{WEBHOOK_URL};")
     # Close DB connection (if used)
     await dp.storage.close()
     await dp.storage.wait_closed()
 
-    logging.warning('Bye!')
+    logging.warning("Bye!")
 
 if __name__ == '__main__':
 
@@ -214,12 +210,11 @@ if __name__ == '__main__':
 
     if webhook_settings:
         WEBHOOK_HOST = environ.get("WEBHOOK_HOST_ADDR")
-        WEBHOOK_PATH = f'webhook/{API_TOKEN}/'
+        WEBHOOK_PATH = f"webhook/{API_TOKEN}/"
         WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
         WEBAPP_HOST = environ.get("WEBAPP_HOST")
         WEBAPP_PORT = environ.get("PORT")
-        logging.info(f'Start webhook..\tWEBAPP_HOST-{WEBAPP_HOST}; WEBAPP_PORT-{WEBAPP_PORT};\n'
-                     f'WEBAPP_URL-{WEBHOOK_URL};')
+
         start_webhook(
             dispatcher=dp,
             webhook_path=f"/{WEBHOOK_PATH}",
