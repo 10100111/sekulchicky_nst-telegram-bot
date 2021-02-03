@@ -9,6 +9,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.executor import start_webhook
 from utils import get_list_of_styles, get_examples
 from model import StyleModel
+import gc
 
 
 if path.exists(path.dirname(__file__)):
@@ -66,6 +67,10 @@ async def stylize(content_image):
     model.load_model()
     output = model.run(content_image)
     return output
+
+
+async def gc_run():
+    gc.collect()
 
 
 @dp.message_handler(state='*', commands=['start', 'help'])
@@ -151,7 +156,7 @@ async def style_select(message: types.Message):
     if 0 < user_style <= n_styles:
         await message.answer(f"\U00002705Ты выбрал стиль _{style_names[user_style - 1]}_.\n", parse_mode='Markdown')
         await BotStates.waiting_processing.set()
-        await handle_go_processing(message, content_img)
+        await handle_go_processing(message)
     else:
         await message.reply("\U0000274EНекорректный ввод данных\n")
         await message.answer("К сожалению стиля с таким номером не существует.\n"
@@ -173,35 +178,33 @@ async def handle_photo(message: types.Message):
 
 
 @dp.message_handler(state=BotStates.waiting_processing)
-async def handle_go_processing(message, content_image):
+async def handle_go_processing(message):
     """
     Стилизация
     """
-    global user_style
+    global user_style, content_img
     await message.answer("Я приступил к обработке фотографии.\n"
                          f"Это может занять какое-то время.\n")
     await message.answer("\U000023F3...\n")
-    output_image = await stylize(content_image)
+    output_image = await stylize(content_img)
     user_style = 0
     await bot.send_photo(chat_id=message.from_user.id, photo=output_image)
     await message.answer("Готово! \U0001F64C\n\nЕсли хочешь попробовать еще, жми\U0001F447\U0001F447",
                          reply_markup=set_keyboard(False))
     await BotStates.waiting_select_style.set()
+    await gc_run()
 
 
 async def on_startup(dp):
     await bot.set_webhook(WEBHOOK_URL)
-    # insert code here to run it after start
+    logging.info(f"Start webhook..\tWEBAPP_HOST-{WEBAPP_HOST}; WEBAPP_PORT-{WEBAPP_PORT};\n"
+                 f"WEBAPP_URL-{WEBHOOK_URL};")
 
 
 async def on_shutdown(dp):
     logging.warning("Shutting down..")
-    logging.info(f"Start webhook..\tWEBAPP_HOST-{WEBAPP_HOST}; WEBAPP_PORT-{WEBAPP_PORT};\n"
-                 f"WEBAPP_URL-{WEBHOOK_URL};")
-    # Close DB connection (if used)
     await dp.storage.close()
     await dp.storage.wait_closed()
-
     logging.warning("Bye!")
 
 if __name__ == '__main__':
