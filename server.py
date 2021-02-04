@@ -1,7 +1,6 @@
 import logging
-from PIL import Image
+from _io import BytesIO
 from os import path, environ
-import numpy as np
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -10,7 +9,6 @@ from aiogram.utils.executor import start_webhook
 from utils import get_list_of_styles, get_examples
 from model import StyleModel
 import gc
-
 
 if path.exists(path.dirname(__file__)):
     # Take environment variables from .env.
@@ -38,17 +36,17 @@ class BotStates(StatesGroup):
 
 # Styles
 n_styles, style_names, user_style = 0, list(), 0
-content_img = Image.fromarray(np.array([0, 0, 0]).astype(np.uint8))
+content_img = BytesIO()
 
 
 def set_keyboard(condition=True):
     """
     Инициализация инлайн-клавиатуры
     """
-    btn1 = types.InlineKeyboardButton(text="\U0001F3A8 Стилизовать", callback_data='style')
-    btn2 = types.InlineKeyboardButton(text="\U0001F5BC Показать примеры", callback_data='example')
-    btn3 = types.InlineKeyboardButton(text="\U0001F4F7 Загрузить фотографию", callback_data='photo')
-    btn4 = types.InlineKeyboardButton(text="\U0001F4BB Репозиторий проекта",
+    btn1 = types.InlineKeyboardButton(text="🎨 Стилизовать", callback_data='style')
+    btn2 = types.InlineKeyboardButton(text="🖼️ Показать примеры", callback_data='example')
+    btn3 = types.InlineKeyboardButton(text="📷 Загрузить фотографию", callback_data='photo')
+    btn4 = types.InlineKeyboardButton(text="🖥️ Репозиторий проекта",
                                       url='https://github.com/sekulchicky/nst-telegram-bot')
     if condition is False:
         keyboard_markup = types.InlineKeyboardMarkup().add(btn1).add(btn3)
@@ -66,12 +64,9 @@ async def stylize(content_image):
     model = StyleModel(user_style)
     model.load_model()
     output = model.run(content_image)
+    del model
     gc.collect()
     return output
-
-
-#async def gc_run():
-#   gc.collect()
 
 
 @dp.message_handler(state='*', commands=['start', 'help'])
@@ -85,16 +80,16 @@ async def send_welcome(message: types.Message):
     n_styles = len(style_names)
     await BotStates.waiting_select_style.set()
     await message.reply(f"Привет, *{message.from_user.username}*!\n", parse_mode='Markdown')
-    await message.answer("Я *Neural-Style-Transfer* бот \U0001F916\n\n"
+    await message.answer("Я *Neural-Style-Transfer* бот 🤖\n\n"
                          f"*Что я умею ?*\n"
                          f"Я могу стилизовать твою фотографию при помощи искусственной нейросети. На данный момент"
-                         f" в моем арсенале имеется {n_styles} различных стилей \U0001F3A8\n\n"
+                         f" в моем арсенале имеется {n_styles} различных стилей 🎨\n\n"
                          f"Также, ты можешь посмотреть примеры уже стилизованных фотографий или посетить"
-                         f" репозиторий данного проекта \U0001F609\n\n"
+                         f" репозиторий данного проекта 😉\n\n"
                          f"*Как управлять ?*\n"
                          f"Управление происходит через встроенную клавиатуру"
-                         f"\U0001F447\U0001F447\U0001F447\nНо не забывай, ты всегда можешь вызвать /help для помощи."
-                         f"\n\nEnjoy it! \U0001F60F",
+                         f"👇👇👇\nНо не забывай, ты всегда можешь вызвать /help для помощи."
+                         f"\n\nEnjoy it!😏",
                          reply_markup=set_keyboard(), parse_mode='Markdown')
 
 
@@ -104,7 +99,7 @@ async def process_callback_btn1(query: types.CallbackQuery):
     Обработчик кнопки 'Стилизовать'
     """
     global user_style, style_names
-    await bot.answer_callback_query(query.id, f"\U0001F3A8")
+    await bot.answer_callback_query(query.id, f"🎨")
     if user_style == 0:
         style_text = ''
         for i, s_name in enumerate(style_names):
@@ -123,7 +118,7 @@ async def process_callback_btn2(query: types.CallbackQuery):
     """
     Обработчик кнопки 'Показать примеры'
     """
-    await bot.answer_callback_query(query.id, f"\U0001F5BC")
+    await bot.answer_callback_query(query.id, f"🖼️")
     await bot.send_message(query.from_user.id, f"Загружаю для тебя примеры...")
     media = types.MediaGroup()
     for img, name in get_examples():
@@ -138,8 +133,10 @@ async def process_callback_btn3(query: types.CallbackQuery):
     """
     Обработчик кнопки 'Загрузить фотографию'
     """
-    await bot.answer_callback_query(query.id, f"")
-    await bot.send_message(query.from_user.id, f"Загрузи фотографию, которую хочешь стилизовать.")
+    await bot.answer_callback_query(query.id, f"📷")
+    await bot.send_message(query.from_user.id, f"Загрузи фотографию, которую хочешь стилизовать. Если ты используешь"
+                                               f"декстопную версию Telegram, то не забудь поставить галочку "
+                                               f"☑ `Compress images`", parse_mode='Markdown')
     await BotStates.waiting_photo.set()
 
 
@@ -152,16 +149,16 @@ async def style_select(message: types.Message):
     try:
         user_style = int(message.text.strip())
     except ValueError:
-        await message.reply("\U0000274EНекорректный ввод данных\n")
+        await message.reply("❎ Некорректный ввод данных\n")
         return
     if 0 < user_style <= n_styles:
-        await message.answer(f"\U00002705Ты выбрал стиль _{style_names[user_style - 1]}_.\n", parse_mode='Markdown')
+        await message.answer(f"✅ Ты выбрал стиль _{style_names[user_style - 1]}_.\n", parse_mode='Markdown')
         await BotStates.waiting_processing.set()
         await handle_go_processing(message)
     else:
-        await message.reply("\U0000274EНекорректный ввод данных\n")
+        await message.reply("❎ Некорректный ввод данных\n")
         await message.answer("К сожалению стиля с таким номером не существует.\n"
-                             f"Попробуй ввести от *1* до *{n_styles}* \U0001F9D0\n", parse_mode='Markdown')
+                             f"Попробуй ввести от *1* до *{n_styles}* 🧐\n", parse_mode='Markdown')
 
 
 @dp.message_handler(state=BotStates.waiting_photo, content_types=['photo'])
@@ -172,8 +169,9 @@ async def handle_photo(message: types.Message):
     global content_img, user_style
     file_id = message.photo[-1].file_id
     file_info = await bot.get_file(file_id)
-    image_data = await bot.download_file(file_info.file_path)
-    content_img = Image.open(image_data)
+    content_img = await bot.download_file(file_info.file_path)
+    # content_img = Image.open(image_data)
+    # print(type(image_data))
     await BotStates.waiting_select_style.set()
     await message.answer("Фотография успешно загружена.\n", reply_markup=set_keyboard(False))
 
@@ -190,7 +188,7 @@ async def handle_go_processing(message):
     output_image = await stylize(content_img)
     user_style = 0
     await bot.send_photo(chat_id=message.from_user.id, photo=output_image)
-    await message.answer("Готово! \U0001F64C\n\nЕсли хочешь попробовать еще, жми\U0001F447\U0001F447",
+    await message.answer("Готово!👍👍\n\nЕсли хочешь попробовать еще, жми👇👇",
                          reply_markup=set_keyboard(False))
     await BotStates.waiting_select_style.set()
 
@@ -206,6 +204,7 @@ async def on_shutdown(dp):
     await dp.storage.close()
     await dp.storage.wait_closed()
     logging.warning("Bye!")
+
 
 if __name__ == '__main__':
 

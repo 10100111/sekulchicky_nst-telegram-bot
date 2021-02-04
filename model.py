@@ -27,20 +27,8 @@ class StyleModel:
             result = self.model(image).cpu()
             return self.postprocess(result[0])
 
-    def preprocess(self, image):
-        size = 1500
-        if max(image.size) > size:
-            transform = transforms.Compose([
-                transforms.Resize(size),
-                transforms.CenterCrop(size),
-                transforms.ToTensor(),
-                transforms.Lambda(lambda x: x.mul(255))])
-        else:
-            transform = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Lambda(lambda x: x.mul(255))])
-        image = transform(image)
-
+    def preprocess(self, img_data):
+        image = utils.load_image(img_data)
         return image.unsqueeze(0).to(self.device)
 
     def postprocess(self, data):
