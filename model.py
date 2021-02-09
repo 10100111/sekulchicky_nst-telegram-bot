@@ -25,7 +25,8 @@ class StyleModel:
             image = self.preprocess(image)
             self.model.to(self.device)
             result = self.model(image).cpu()
-            return self.postprocess(result[0])
+        del self.model
+        return self.postprocess(result[0])
 
     def preprocess(self, img_data):
         image = utils.load_image(img_data)
